@@ -1,12 +1,19 @@
 package com.example.virtu360.tour.interfaces.rest.controllers;
 
+import com.example.virtu360.tour.domain.model.queries.GetAllNodesQuery;
+import com.example.virtu360.tour.domain.model.queries.GetLinksByNodeIdQuery;
+import com.example.virtu360.tour.domain.model.queries.GetMarkersByNodeIdQuery;
+import com.example.virtu360.tour.domain.model.queries.GetNodeByIdQuery;
 import com.example.virtu360.tour.domain.services.NodeCommandService;
+import com.example.virtu360.tour.domain.services.NodeQueryService;
 import com.example.virtu360.tour.interfaces.rest.resources.*;
 import com.example.virtu360.tour.interfaces.rest.transform.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping(
@@ -19,10 +26,18 @@ import org.springframework.web.bind.annotation.*;
 public class NodesController {
 
   private final NodeCommandService nodeCommandService;
+  private final NodeQueryService nodeQueryService;
 
-  public NodesController(NodeCommandService nodeCommandService) {
+  public NodesController(
+    NodeCommandService nodeCommandService,
+    NodeQueryService nodeQueryService) {
     this.nodeCommandService = nodeCommandService;
+    this.nodeQueryService = nodeQueryService;
   }
+
+  // =========================
+  // COMMANDS
+  // =========================
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<NodeResource> createNode(
@@ -72,5 +87,39 @@ public class NodesController {
         MarkerResourceFromEntityAssembler.toResourceFromEntity(marker)
       ))
       .orElseGet(() -> ResponseEntity.notFound().build());
+  }
+
+  @GetMapping()
+  public List<NodeResource> getAllNodes() {
+    var nodes = nodeQueryService.handle(new GetAllNodesQuery());
+
+    return nodes.stream()
+      .map(NodeResourceFromEntityAssembler::toResourceFromEntity)
+      .toList();
+  }
+
+  @GetMapping("{id}")
+  public ResponseEntity<NodeResource> getNodeById(@PathVariable Long id) {
+    var node = nodeQueryService.handle(new GetNodeByIdQuery(id));
+
+    return node.map(value -> ResponseEntity.ok(
+      NodeResourceFromEntityAssembler.toResourceFromEntity(value)
+    )).orElseGet(() -> ResponseEntity.notFound().build());
+  }
+
+  @GetMapping("/{nodeId}/links")
+  public List<LinkResource> getLinksByNodeId(@PathVariable Long nodeId) {
+    return nodeQueryService.handle(new GetLinksByNodeIdQuery(nodeId))
+      .stream()
+      .map(LinkResourceFromEntityAssembler::toResourceFromEntity)
+      .toList();
+  }
+
+  @GetMapping("/{nodeId}/markers")
+  public List<MarkerResponse> getMarkersByNodeId(@PathVariable Long nodeId) {
+    return nodeQueryService.handle(new GetMarkersByNodeIdQuery(nodeId))
+      .stream()
+      .map(MarkerResourceFromEntityAssembler::toResourceFromEntity)
+      .toList();
   }
 }
