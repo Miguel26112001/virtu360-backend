@@ -5,6 +5,7 @@ import com.example.virtu360.tour.domain.model.commands.AddMarkerCommand;
 import com.example.virtu360.tour.domain.model.commands.ConnectNodesCommand;
 import com.example.virtu360.tour.domain.model.commands.CreateNodeCommand;
 import com.example.virtu360.tour.domain.model.entities.Link;
+import com.example.virtu360.tour.domain.model.entities.Marker;
 
 import java.util.Optional;
 
@@ -14,5 +15,5 @@ public interface NodeCommandService {
 
   Optional<Link> handle(ConnectNodesCommand command);
 
-  void handle(AddMarkerCommand command);
+  Optional<Marker> handle(AddMarkerCommand command);
 }

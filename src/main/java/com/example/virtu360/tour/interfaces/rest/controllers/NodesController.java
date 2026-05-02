@@ -1,14 +1,8 @@
 package com.example.virtu360.tour.interfaces.rest.controllers;
 
 import com.example.virtu360.tour.domain.services.NodeCommandService;
-import com.example.virtu360.tour.interfaces.rest.resources.ConnectNodeResource;
-import com.example.virtu360.tour.interfaces.rest.resources.CreateNodeResource;
-import com.example.virtu360.tour.interfaces.rest.resources.LinkResource;
-import com.example.virtu360.tour.interfaces.rest.resources.NodeResource;
-import com.example.virtu360.tour.interfaces.rest.transform.ConnectNodesCommandFromResourceAssembler;
-import com.example.virtu360.tour.interfaces.rest.transform.CreateNodeCommandFromResourceAssembler;
-import com.example.virtu360.tour.interfaces.rest.transform.LinkResourceFromEntityAssembler;
-import com.example.virtu360.tour.interfaces.rest.transform.NodeResourceFromEntityAssembler;
+import com.example.virtu360.tour.interfaces.rest.resources.*;
+import com.example.virtu360.tour.interfaces.rest.transform.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -60,5 +54,23 @@ public class NodesController {
     var linkResource = LinkResourceFromEntityAssembler.toResourceFromEntity(link.get());
 
     return ResponseEntity.ok(linkResource);
+  }
+
+  @PostMapping("/{nodeId}/markers")
+  public ResponseEntity<MarkerResponse> addMarker(
+    @PathVariable Long nodeId,
+    @RequestBody AddMarkerToNodeResource resource
+  ) {
+
+    var command = AddMarkerCommandFromResourceAssembler
+      .toCommandFromResource(nodeId, resource);
+
+    var optionalMarker = nodeCommandService.handle(command);
+
+    return optionalMarker
+      .map(marker -> ResponseEntity.ok(
+        MarkerResourceFromEntityAssembler.toResourceFromEntity(marker)
+      ))
+      .orElseGet(() -> ResponseEntity.notFound().build());
   }
 }

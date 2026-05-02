@@ -67,7 +67,7 @@ public class NodeCommandServiceImpl implements NodeCommandService {
   }
 
   @Override
-  public void handle(AddMarkerCommand command) {
+  public Optional<Marker> handle(AddMarkerCommand command) {
 
     var node = nodeRepository.findById(command.nodeId())
         .orElseThrow(() -> new RuntimeException("Node not found"));
@@ -84,6 +84,8 @@ public class NodeCommandServiceImpl implements NodeCommandService {
     node.addMarker(marker);
 
     nodeRepository.save(node);
+
+    return Optional.of(marker);
   }
 
   private String generateThumbnailUrl(String url) {
