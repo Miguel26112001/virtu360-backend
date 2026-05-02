@@ -12,7 +12,7 @@ public class MarkerResourceFromEntityAssembler {
     return new MarkerResponse(
       marker.getId(),
       marker.getNode().getId().toString(),
-      marker.getType().toString(),
+      marker.getType().toString().toLowerCase(),
       new PositionResource(
         marker.getPosition().yaw(),
         marker.getPosition().pitch()
