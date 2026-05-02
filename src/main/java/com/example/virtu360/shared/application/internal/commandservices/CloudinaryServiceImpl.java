@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
+import java.security.MessageDigest;
 import java.util.Map;
 import java.util.Optional;
 
@@ -27,20 +28,21 @@ public class CloudinaryServiceImpl implements CloudinaryService {
   public Optional<CloudinaryResponse> handle(UploadImageCommand command) {
 
     byte[] compressed = compressImage(command.file());
+    String hash = generateHash(compressed);
 
     try {
       @SuppressWarnings("unchecked")
       Map<String, Object> result = cloudinary.uploader().upload(
-          compressed,
-          ObjectUtils.asMap(
-              "folder", "virtu-pro/nodes",
-              "overwrite", true,
-              "resource_type", "image"
-          )
+        compressed,
+        ObjectUtils.asMap(
+          "folder", "virtu-pro/nodes",
+          "public_id", hash,
+          "overwrite", false,
+          "resource_type", "image"
+        )
       );
 
       var imageResponse = mapResponse(result);
-
       return Optional.of(imageResponse);
 
     } catch (Exception e) {
@@ -81,6 +83,22 @@ public class CloudinaryServiceImpl implements CloudinaryService {
 
     } catch (Exception e) {
       throw new RuntimeException("Error compressing image", e);
+    }
+  }
+
+  private String generateHash(byte[] data) {
+    try {
+      MessageDigest digest = MessageDigest.getInstance("SHA-256");
+      byte[] hashBytes = digest.digest(data);
+
+      StringBuilder hex = new StringBuilder();
+      for (byte b : hashBytes) {
+        hex.append(String.format("%02x", b));
+      }
+
+      return hex.toString();
+    } catch (Exception e) {
+      throw new RuntimeException("Error generating hash", e);
     }
   }
 }
