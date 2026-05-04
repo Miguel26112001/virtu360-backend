@@ -12,8 +12,8 @@ public class LinkResourceFromEntityAssembler {
     return new LinkResource(
         entity.getFromNode().getId().toString(),
         entity.getToNodeId(),
-        (int)entity.getPosition().yaw(),
-        (int)entity.getPosition().pitch()
+        entity.getPosition().yaw(),
+        entity.getPosition().pitch()
     );
   }
 }
