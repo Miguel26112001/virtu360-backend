@@ -1,7 +1,6 @@
 package com.example.virtu360.tour.domain.model.entities;
 
 import com.example.virtu360.shared.domain.model.entities.AuditableModel;
-import com.example.virtu360.tour.domain.model.aggregates.Node;
 import com.example.virtu360.tour.domain.model.valueobjects.MarkerType;
 import com.example.virtu360.tour.domain.model.valueobjects.Position;
 import jakarta.persistence.Column;
@@ -27,7 +26,7 @@ import java.util.UUID;
 public class Marker extends AuditableModel {
 
   @Id
-  private String id;
+  private UUID id;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "node_id", nullable = false)
@@ -64,13 +63,15 @@ public class Marker extends AuditableModel {
       String description
   ) {
     Marker marker = new Marker();
-    marker.id = UUID.randomUUID().toString();
+
+    marker.id = UUID.randomUUID();
     marker.type = Objects.requireNonNull(type);
     marker.position = Objects.requireNonNull(position);
     marker.tooltip = tooltip;
     marker.title = title;
     marker.content = content;
     marker.description = description;
+
     return marker;
   }
 
@@ -78,10 +79,25 @@ public class Marker extends AuditableModel {
   // RELATION MANAGEMENT
   // =========================
   public void assignTo(Node node) {
-    this.node = node;
+    this.node = Objects.requireNonNull(node);
   }
 
   public void removeFromNode() {
     this.node = null;
+  }
+
+  // =========================
+  // EQUALITY
+  // =========================
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof Marker marker)) return false;
+    return id != null && id.equals(marker.id);
+  }
+
+  @Override
+  public int hashCode() {
+    return getClass().hashCode();
   }
 }

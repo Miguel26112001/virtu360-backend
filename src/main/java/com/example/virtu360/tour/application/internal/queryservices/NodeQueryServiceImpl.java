@@ -1,6 +1,6 @@
 package com.example.virtu360.tour.application.internal.queryservices;
 
-import com.example.virtu360.tour.domain.model.aggregates.Node;
+import com.example.virtu360.tour.domain.model.entities.Node;
 import com.example.virtu360.tour.domain.model.entities.Link;
 import com.example.virtu360.tour.domain.model.entities.Marker;
 import com.example.virtu360.tour.domain.model.queries.GetAllNodesQuery;

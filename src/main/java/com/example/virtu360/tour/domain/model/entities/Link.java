@@ -1,7 +1,6 @@
 package com.example.virtu360.tour.domain.model.entities;
 
 import com.example.virtu360.shared.domain.model.entities.AuditableModel;
-import com.example.virtu360.tour.domain.model.aggregates.Node;
 import com.example.virtu360.tour.domain.model.valueobjects.Position;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -24,14 +23,14 @@ import java.util.UUID;
 public class Link extends AuditableModel {
 
   @Id
-  private String id;
+  private UUID id;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "from_node_id", nullable = false)
   private Node fromNode;
 
   @Column(name = "to_node_id", nullable = false)
-  private String toNodeId;
+  private UUID toNodeId;
 
   @Embedded
   private Position position;
@@ -39,9 +38,9 @@ public class Link extends AuditableModel {
   // =========================
   // FACTORY
   // =========================
-  public static Link create(String toNodeId, Position position) {
+  public static Link create(UUID toNodeId, Position position) {
     Link link = new Link();
-    link.id = UUID.randomUUID().toString();
+    link.id = UUID.randomUUID();
     link.toNodeId = Objects.requireNonNull(toNodeId);
     link.position = Objects.requireNonNull(position);
     return link;
@@ -51,10 +50,25 @@ public class Link extends AuditableModel {
   // RELATION MANAGEMENT
   // =========================
   public void assignFrom(Node node) {
-    this.fromNode = node;
+    this.fromNode = Objects.requireNonNull(node);
   }
 
   public void removeFromNode() {
     this.fromNode = null;
+  }
+
+  // =========================
+  // EQUALITY
+  // =========================
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof Link link)) return false;
+    return id != null && id.equals(link.id);
+  }
+
+  @Override
+  public int hashCode() {
+    return getClass().hashCode();
   }
 }

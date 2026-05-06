@@ -1,6 +1,6 @@
 package com.example.virtu360.tour.interfaces.rest.transform;
 
-import com.example.virtu360.tour.domain.model.aggregates.Node;
+import com.example.virtu360.tour.domain.model.entities.Node;
 import com.example.virtu360.tour.interfaces.rest.resources.NodeResource;
 
 public class NodeResourceFromEntityAssembler {

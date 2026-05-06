@@ -1,6 +1,6 @@
 package com.example.virtu360.tour.domain.services;
 
-import com.example.virtu360.tour.domain.model.aggregates.Node;
+import com.example.virtu360.tour.domain.model.entities.Node;
 import com.example.virtu360.tour.domain.model.commands.AddMarkerCommand;
 import com.example.virtu360.tour.domain.model.commands.ConnectNodesCommand;
 import com.example.virtu360.tour.domain.model.commands.CreateNodeCommand;
