@@ -52,6 +52,8 @@ public class ProjectCommandServiceImpl implements ProjectCommandService {
     Project project = getProject(command.projectId());
 
     projectRepository.delete(project);
+
+    deleteProjectPanoramas(project);
   }
 
   @Override
@@ -122,6 +124,8 @@ public class ProjectCommandServiceImpl implements ProjectCommandService {
     project.removeNode(node);
 
     projectRepository.save(project);
+
+    deletePanorama(node);
   }
 
   // =========================
@@ -224,5 +228,21 @@ public class ProjectCommandServiceImpl implements ProjectCommandService {
         "/upload/",
         "/upload/w_300,c_limit,q_auto,f_auto/"
     );
+  }
+
+  private void deletePanorama(Node node) {
+    if (node.getPanoramaPublicId() != null) {
+      externalCloudinaryService.deleteImage(
+          node.getPanoramaPublicId()
+      );
+    }
+  }
+
+  private void deleteProjectPanoramas(Project project) {
+
+    project.getNodes().stream()
+        .map(Node::getPanoramaPublicId)
+        .filter(id -> id != null && !id.isBlank())
+        .forEach(externalCloudinaryService::deleteImage);
   }
 }
