@@ -106,30 +106,38 @@ public class Node extends AuditableModel {
   // LINKS
   // =========================
   public Link connectTo(Node target, Position position) {
-    Objects.requireNonNull(target, "Target node cannot be null");
-    Objects.requireNonNull(position, "Position cannot be null");
+
+    Objects.requireNonNull(target);
+    Objects.requireNonNull(position);
 
     if (!this.project.equals(target.getProject())) {
-      throw new IllegalStateException("Cannot connect nodes from different projects");
+      throw new IllegalStateException(
+          "Cannot connect nodes from different projects"
+      );
+    }
+
+    if (this.equals(target)) {
+      throw new IllegalStateException(
+          "Cannot connect node to itself"
+      );
     }
 
     boolean exists = links.stream()
         .anyMatch(l -> l.getToNodeId().equals(target.getId()));
 
     if (exists) {
-      throw new IllegalStateException("Link already exists");
+      throw new IllegalStateException(
+          "Link already exists"
+      );
     }
 
-    boolean reverseExists = target.getLinks().stream()
-        .anyMatch(l -> l.getToNodeId().equals(this.id));
-
-    if (reverseExists) {
-      throw new IllegalStateException("Reverse link already exists");
-    }
-
-    Link link = Link.create(target.getId(), position);
+    Link link = Link.create(
+        target.getId(),
+        position
+    );
 
     links.add(link);
+
     link.assignFrom(this);
 
     return link;
