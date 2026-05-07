@@ -1,8 +1,10 @@
 package com.example.virtu360.tour.interfaces.rest.resources;
 
-public record MarkerResponse(
-    String id,
-    String nodeId,
+import java.util.UUID;
+
+public record MarkerResource(
+    UUID id,
+    UUID nodeId,
     String type,
     PositionResource position,
     String tooltip,

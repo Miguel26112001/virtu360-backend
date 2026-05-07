@@ -1,10 +1,8 @@
 package com.example.virtu360.tour.application.internal.commandservices;
 
+import com.example.virtu360.tour.domain.model.aggregates.Project;
+import com.example.virtu360.tour.domain.model.commands.*;
 import com.example.virtu360.tour.domain.model.entities.Node;
-import com.example.virtu360.tour.domain.model.commands.AddMarkerCommand;
-import com.example.virtu360.tour.domain.model.commands.ConnectNodesCommand;
-import com.example.virtu360.tour.domain.model.commands.CreateNodeCommand;
-import com.example.virtu360.tour.domain.model.entities.Link;
 import com.example.virtu360.tour.domain.model.entities.Marker;
 import com.example.virtu360.tour.domain.model.valueobjects.Position;
 import com.example.virtu360.tour.domain.services.ExternalCloudinaryService;
@@ -13,6 +11,7 @@ import com.example.virtu360.tour.infrastructure.persistence.jpa.repositories.Pro
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class ProjectCommandServiceImpl implements ProjectCommandService {
@@ -22,57 +21,163 @@ public class ProjectCommandServiceImpl implements ProjectCommandService {
 
   public ProjectCommandServiceImpl(
       ProjectRepository projectRepository,
-      ExternalCloudinaryService externalCloudinaryService) {
+      ExternalCloudinaryService externalCloudinaryService
+  ) {
     this.projectRepository = projectRepository;
     this.externalCloudinaryService = externalCloudinaryService;
   }
 
-  @Override
-  public Optional<Node> handle(CreateNodeCommand command) {
+  // =========================
+  // PROJECTS
+  // =========================
 
-    var optionalUpload = externalCloudinaryService.uploadImage(command.file());
+  @Override
+  public Optional<Project> handle(CreateProjectCommand command) {
+
+    Project project = Project.create(
+        command.ownerId(),
+        command.title(),
+        command.description()
+    );
+
+    projectRepository.save(project);
+
+    return Optional.of(project);
+  }
+
+  @Override
+  public Optional<Project> handle(DeleteProjectCommand command) {
+
+    Project project = getProject(command.projectId());
+
+    projectRepository.delete(project);
+
+    return Optional.of(project);
+  }
+
+  @Override
+  public Optional<Project> handle(PublishProjectCommand command) {
+
+    Project project = getProject(command.projectId());
+
+    project.publish();
+
+    projectRepository.save(project);
+
+    return Optional.of(project);
+  }
+
+  @Override
+  public Optional<Project> handle(UnpublishProjectCommand command) {
+
+    Project project = getProject(command.projectId());
+
+    project.unpublish();
+
+    projectRepository.save(project);
+
+    return Optional.of(project);
+  }
+
+  // =========================
+  // NODES
+  // =========================
+
+  @Override
+  public Optional<Project> handle(CreateNodeCommand command) {
+
+    Project project = getProject(command.projectId());
+
+    var optionalUpload =
+        externalCloudinaryService.uploadImage(command.file());
+
     if (optionalUpload.isEmpty()) {
       throw new RuntimeException("Unable to upload image");
     }
 
     var upload = optionalUpload.get();
+
     String thumbnailUrl = generateThumbnailUrl(upload.url());
-    var node = Node.create(
+
+    Node node = Node.create(
         upload.url(),
         thumbnailUrl,
         command.caption(),
-        upload.publicId());
+        upload.publicId()
+    );
 
-    projectRepository.save(node);
+    project.addNode(node);
 
-    return Optional.of(node);
+    projectRepository.save(project);
+
+    return Optional.of(project);
   }
 
   @Override
-  public Optional<Link> handle(ConnectNodesCommand command) {
-    var fromNode = projectRepository.findById(command.fromNodeId())
-        .orElseThrow(() -> new RuntimeException("From node not found"));
+  public Optional<Project> handle(RemoveNodeCommand command) {
 
-    var toNode = projectRepository.findById(command.toNodeId())
-        .orElseThrow(() -> new RuntimeException("To node not found"));
+    Project project = getProject(command.projectId());
 
-    var link = fromNode.connectTo(
-        toNode,
+    Node node = project.findNode(command.nodeId());
+
+    project.removeNode(node);
+
+    projectRepository.save(project);
+
+    return Optional.of(project);
+  }
+
+  // =========================
+  // LINKS
+  // =========================
+
+  @Override
+  public Optional<Project> handle(ConnectNodesCommand command) {
+
+    Project project = getProject(command.projectId());
+
+    project.connectNodes(
+        command.fromNodeId(),
+        command.toNodeId(),
         new Position(command.yaw(), command.pitch())
     );
 
-    projectRepository.save(fromNode);
+    projectRepository.save(project);
 
-    return Optional.of(link);
+    return Optional.of(project);
   }
 
   @Override
-  public Optional<Marker> handle(AddMarkerCommand command) {
+  public Optional<Project> handle(RemoveLinkCommand command) {
 
-    var node = projectRepository.findById(command.nodeId())
-        .orElseThrow(() -> new RuntimeException("Node not found"));
+    Project project = getProject(command.projectId());
 
-    var marker = Marker.create(
+    Node fromNode = project.findNode(command.fromNodeId());
+
+    var link = fromNode.getLinks().stream()
+        .filter(l -> l.getId().equals(command.linkId()))
+        .findFirst()
+        .orElseThrow(() -> new IllegalArgumentException("Link not found"));
+
+    fromNode.removeLink(link);
+
+    projectRepository.save(project);
+
+    return Optional.of(project);
+  }
+
+  // =========================
+  // MARKERS
+  // =========================
+
+  @Override
+  public Optional<Project> handle(AddMarkerCommand command) {
+
+    Project project = getProject(command.projectId());
+
+    Node node = project.findNode(command.nodeId());
+
+    Marker marker = Marker.create(
         command.type(),
         new Position(command.yaw(), command.pitch()),
         command.tooltip(),
@@ -83,9 +188,38 @@ public class ProjectCommandServiceImpl implements ProjectCommandService {
 
     node.addMarker(marker);
 
-    projectRepository.save(node);
+    projectRepository.save(project);
 
-    return Optional.of(marker);
+    return Optional.of(project);
+  }
+
+  @Override
+  public Optional<Project> handle(RemoveMarkerCommand command) {
+
+    Project project = getProject(command.projectId());
+
+    Node node = project.findNode(command.nodeId());
+
+    var marker = node.getMarkers().stream()
+        .filter(m -> m.getId().equals(command.markerId()))
+        .findFirst()
+        .orElseThrow(() -> new IllegalArgumentException("Marker not found"));
+
+    node.removeMarker(marker);
+
+    projectRepository.save(project);
+
+    return Optional.of(project);
+  }
+
+  // =========================
+  // HELPERS
+  // =========================
+
+  private Project getProject(UUID projectId) {
+    return projectRepository.findById(projectId)
+        .orElseThrow(() ->
+            new IllegalArgumentException("Project not found"));
   }
 
   private String generateThumbnailUrl(String url) {

@@ -4,12 +4,14 @@ import com.example.virtu360.tour.domain.model.entities.Node;
 import com.example.virtu360.tour.interfaces.rest.resources.NodeResource;
 
 public class NodeResourceFromEntityAssembler {
+
   private NodeResourceFromEntityAssembler() {
   }
 
   public static NodeResource toResourceFromEntity(Node entity) {
+
     return new NodeResource(
-        entity.getId().toString(),
+        entity.getId(),
         entity.getPanoramaUrl(),
         entity.getThumbnailUrl(),
         entity.getCaption()
