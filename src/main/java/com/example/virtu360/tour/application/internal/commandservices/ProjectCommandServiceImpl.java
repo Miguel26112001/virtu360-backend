@@ -2,6 +2,7 @@ package com.example.virtu360.tour.application.internal.commandservices;
 
 import com.example.virtu360.tour.domain.model.aggregates.Project;
 import com.example.virtu360.tour.domain.model.commands.*;
+import com.example.virtu360.tour.domain.model.entities.Link;
 import com.example.virtu360.tour.domain.model.entities.Node;
 import com.example.virtu360.tour.domain.model.entities.Marker;
 import com.example.virtu360.tour.domain.model.valueobjects.Position;
@@ -46,13 +47,11 @@ public class ProjectCommandServiceImpl implements ProjectCommandService {
   }
 
   @Override
-  public Optional<Project> handle(DeleteProjectCommand command) {
+  public void handle(DeleteProjectCommand command) {
 
     Project project = getProject(command.projectId());
 
     projectRepository.delete(project);
-
-    return Optional.of(project);
   }
 
   @Override
@@ -84,7 +83,7 @@ public class ProjectCommandServiceImpl implements ProjectCommandService {
   // =========================
 
   @Override
-  public Optional<Project> handle(CreateNodeCommand command) {
+  public Optional<Node> handle(CreateNodeCommand command) {
 
     Project project = getProject(command.projectId());
 
@@ -110,11 +109,11 @@ public class ProjectCommandServiceImpl implements ProjectCommandService {
 
     projectRepository.save(project);
 
-    return Optional.of(project);
+    return Optional.of(node);
   }
 
   @Override
-  public Optional<Project> handle(RemoveNodeCommand command) {
+  public void handle(RemoveNodeCommand command) {
 
     Project project = getProject(command.projectId());
 
@@ -123,8 +122,6 @@ public class ProjectCommandServiceImpl implements ProjectCommandService {
     project.removeNode(node);
 
     projectRepository.save(project);
-
-    return Optional.of(project);
   }
 
   // =========================
@@ -132,38 +129,39 @@ public class ProjectCommandServiceImpl implements ProjectCommandService {
   // =========================
 
   @Override
-  public Optional<Project> handle(ConnectNodesCommand command) {
+  public Optional<Link> handle(ConnectNodesCommand command) {
 
     Project project = getProject(command.projectId());
 
-    project.connectNodes(
-        command.fromNodeId(),
-        command.toNodeId(),
+    Node from = project.findNode(command.fromNodeId());
+    Node to = project.findNode(command.toNodeId());
+
+    Link link = from.connectTo(
+        to,
         new Position(command.yaw(), command.pitch())
     );
 
     projectRepository.save(project);
 
-    return Optional.of(project);
+    return Optional.of(link);
   }
 
   @Override
-  public Optional<Project> handle(RemoveLinkCommand command) {
+  public void handle(RemoveLinkCommand command) {
 
     Project project = getProject(command.projectId());
 
     Node fromNode = project.findNode(command.fromNodeId());
 
-    var link = fromNode.getLinks().stream()
+    Link link = fromNode.getLinks().stream()
         .filter(l -> l.getId().equals(command.linkId()))
         .findFirst()
-        .orElseThrow(() -> new IllegalArgumentException("Link not found"));
+        .orElseThrow(() ->
+            new IllegalArgumentException("Link not found"));
 
     fromNode.removeLink(link);
 
     projectRepository.save(project);
-
-    return Optional.of(project);
   }
 
   // =========================
@@ -171,7 +169,7 @@ public class ProjectCommandServiceImpl implements ProjectCommandService {
   // =========================
 
   @Override
-  public Optional<Project> handle(AddMarkerCommand command) {
+  public Optional<Marker> handle(AddMarkerCommand command) {
 
     Project project = getProject(command.projectId());
 
@@ -190,26 +188,25 @@ public class ProjectCommandServiceImpl implements ProjectCommandService {
 
     projectRepository.save(project);
 
-    return Optional.of(project);
+    return Optional.of(marker);
   }
 
   @Override
-  public Optional<Project> handle(RemoveMarkerCommand command) {
+  public void handle(RemoveMarkerCommand command) {
 
     Project project = getProject(command.projectId());
 
     Node node = project.findNode(command.nodeId());
 
-    var marker = node.getMarkers().stream()
+    Marker marker = node.getMarkers().stream()
         .filter(m -> m.getId().equals(command.markerId()))
         .findFirst()
-        .orElseThrow(() -> new IllegalArgumentException("Marker not found"));
+        .orElseThrow(() ->
+            new IllegalArgumentException("Marker not found"));
 
     node.removeMarker(marker);
 
     projectRepository.save(project);
-
-    return Optional.of(project);
   }
 
   // =========================
