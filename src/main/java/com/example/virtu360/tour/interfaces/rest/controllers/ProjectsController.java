@@ -79,6 +79,24 @@ public class ProjectsController {
   }
 
   // =========================
+  // GET BY OWNER
+  // =========================
+
+  @GetMapping
+  public List<ProjectSummaryResource> getProjectsByOwnerId(
+      @RequestParam(required = false) String ownerId
+  ) {
+
+    var query = new GetProjectsByOwnerIdQuery(ownerId);
+
+    var projects = projectQueryService.handle(query);
+
+    return projects.stream()
+        .map(ProjectSummaryResourceFromEntityAssembler::toResourceFromEntity)
+        .toList();
+  }
+
+  // =========================
   // GET PUBLISHED
   // =========================
 
