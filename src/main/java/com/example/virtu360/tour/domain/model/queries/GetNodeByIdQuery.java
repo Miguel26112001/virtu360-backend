@@ -1,4 +1,9 @@
 package com.example.virtu360.tour.domain.model.queries;
 
-public record GetNodeByIdQuery(Long nodeId) {
+import java.util.UUID;
+
+public record GetNodeByIdQuery(
+    UUID projectId,
+    UUID nodeId
+) {
 }

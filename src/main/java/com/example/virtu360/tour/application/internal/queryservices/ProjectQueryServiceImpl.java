@@ -7,35 +7,35 @@ import com.example.virtu360.tour.domain.model.queries.GetAllNodesQuery;
 import com.example.virtu360.tour.domain.model.queries.GetLinksByNodeIdQuery;
 import com.example.virtu360.tour.domain.model.queries.GetMarkersByNodeIdQuery;
 import com.example.virtu360.tour.domain.model.queries.GetNodeByIdQuery;
-import com.example.virtu360.tour.domain.services.NodeQueryService;
-import com.example.virtu360.tour.infrastructure.persistence.jpa.repositories.NodeRepository;
+import com.example.virtu360.tour.domain.services.ProjectQueryService;
+import com.example.virtu360.tour.infrastructure.persistence.jpa.repositories.ProjectRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class NodeQueryServiceImpl implements NodeQueryService {
+public class ProjectQueryServiceImpl implements ProjectQueryService {
 
-  private final NodeRepository nodeRepository;
+  private final ProjectRepository projectRepository;
 
-  public NodeQueryServiceImpl(NodeRepository nodeRepository) {
-    this.nodeRepository = nodeRepository;
+  public ProjectQueryServiceImpl(ProjectRepository projectRepository) {
+    this.projectRepository = projectRepository;
   }
 
   @Override
   public List<Node> handle(GetAllNodesQuery query) {
-    return nodeRepository.findAll();
+    return projectRepository.findAll();
   }
 
   @Override
   public Optional<Node> handle(GetNodeByIdQuery query) {
-    return nodeRepository.findById(query.nodeId());
+    return projectRepository.findById(query.nodeId());
   }
 
   @Override
   public List<Link> handle(GetLinksByNodeIdQuery query) {
-    var node = nodeRepository.findById(query.nodeId())
+    var node = projectRepository.findById(query.nodeId())
       .orElseThrow(() -> new RuntimeException("Node not found"));
 
     return node.getLinks();
@@ -43,7 +43,7 @@ public class NodeQueryServiceImpl implements NodeQueryService {
 
   @Override
   public List<Marker> handle(GetMarkersByNodeIdQuery query) {
-    var node = nodeRepository.findById(query.nodeId())
+    var node = projectRepository.findById(query.nodeId())
       .orElseThrow(() -> new RuntimeException("Node not found"));
 
     return node.getMarkers();

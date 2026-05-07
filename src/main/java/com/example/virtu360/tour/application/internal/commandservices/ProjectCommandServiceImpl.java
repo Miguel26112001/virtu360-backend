@@ -8,22 +8,22 @@ import com.example.virtu360.tour.domain.model.entities.Link;
 import com.example.virtu360.tour.domain.model.entities.Marker;
 import com.example.virtu360.tour.domain.model.valueobjects.Position;
 import com.example.virtu360.tour.domain.services.ExternalCloudinaryService;
-import com.example.virtu360.tour.domain.services.NodeCommandService;
-import com.example.virtu360.tour.infrastructure.persistence.jpa.repositories.NodeRepository;
+import com.example.virtu360.tour.domain.services.ProjectCommandService;
+import com.example.virtu360.tour.infrastructure.persistence.jpa.repositories.ProjectRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Service
-public class NodeCommandServiceImpl implements NodeCommandService {
+public class ProjectCommandServiceImpl implements ProjectCommandService {
 
-  private final NodeRepository nodeRepository;
+  private final ProjectRepository projectRepository;
   private final ExternalCloudinaryService externalCloudinaryService;
 
-  public NodeCommandServiceImpl(
-      NodeRepository nodeRepository,
+  public ProjectCommandServiceImpl(
+      ProjectRepository projectRepository,
       ExternalCloudinaryService externalCloudinaryService) {
-    this.nodeRepository = nodeRepository;
+    this.projectRepository = projectRepository;
     this.externalCloudinaryService = externalCloudinaryService;
   }
 
@@ -43,17 +43,17 @@ public class NodeCommandServiceImpl implements NodeCommandService {
         command.caption(),
         upload.publicId());
 
-    nodeRepository.save(node);
+    projectRepository.save(node);
 
     return Optional.of(node);
   }
 
   @Override
   public Optional<Link> handle(ConnectNodesCommand command) {
-    var fromNode = nodeRepository.findById(command.fromNodeId())
+    var fromNode = projectRepository.findById(command.fromNodeId())
         .orElseThrow(() -> new RuntimeException("From node not found"));
 
-    var toNode = nodeRepository.findById(command.toNodeId())
+    var toNode = projectRepository.findById(command.toNodeId())
         .orElseThrow(() -> new RuntimeException("To node not found"));
 
     var link = fromNode.connectTo(
@@ -61,7 +61,7 @@ public class NodeCommandServiceImpl implements NodeCommandService {
         new Position(command.yaw(), command.pitch())
     );
 
-    nodeRepository.save(fromNode);
+    projectRepository.save(fromNode);
 
     return Optional.of(link);
   }
@@ -69,7 +69,7 @@ public class NodeCommandServiceImpl implements NodeCommandService {
   @Override
   public Optional<Marker> handle(AddMarkerCommand command) {
 
-    var node = nodeRepository.findById(command.nodeId())
+    var node = projectRepository.findById(command.nodeId())
         .orElseThrow(() -> new RuntimeException("Node not found"));
 
     var marker = Marker.create(
@@ -83,7 +83,7 @@ public class NodeCommandServiceImpl implements NodeCommandService {
 
     node.addMarker(marker);
 
-    nodeRepository.save(node);
+    projectRepository.save(node);
 
     return Optional.of(marker);
   }

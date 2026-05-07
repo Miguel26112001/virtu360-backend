@@ -4,8 +4,8 @@ import com.example.virtu360.tour.domain.model.queries.GetAllNodesQuery;
 import com.example.virtu360.tour.domain.model.queries.GetLinksByNodeIdQuery;
 import com.example.virtu360.tour.domain.model.queries.GetMarkersByNodeIdQuery;
 import com.example.virtu360.tour.domain.model.queries.GetNodeByIdQuery;
-import com.example.virtu360.tour.domain.services.NodeCommandService;
-import com.example.virtu360.tour.domain.services.NodeQueryService;
+import com.example.virtu360.tour.domain.services.ProjectCommandService;
+import com.example.virtu360.tour.domain.services.ProjectQueryService;
 import com.example.virtu360.tour.interfaces.rest.resources.*;
 import com.example.virtu360.tour.interfaces.rest.transform.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,14 +25,14 @@ import java.util.List;
 )
 public class NodesController {
 
-  private final NodeCommandService nodeCommandService;
-  private final NodeQueryService nodeQueryService;
+  private final ProjectCommandService projectCommandService;
+  private final ProjectQueryService projectQueryService;
 
   public NodesController(
-    NodeCommandService nodeCommandService,
-    NodeQueryService nodeQueryService) {
-    this.nodeCommandService = nodeCommandService;
-    this.nodeQueryService = nodeQueryService;
+    ProjectCommandService projectCommandService,
+    ProjectQueryService projectQueryService) {
+    this.projectCommandService = projectCommandService;
+    this.projectQueryService = projectQueryService;
   }
 
   // =========================
@@ -47,7 +47,7 @@ public class NodesController {
     var command = CreateNodeCommandFromResourceAssembler
         .toCommandFromResource(resource);
 
-    var node = nodeCommandService.handle(command);
+    var node = projectCommandService.handle(command);
 
     return node.map(value -> ResponseEntity.ok(
         NodeResourceFromEntityAssembler.toResourceFromEntity(value)
@@ -61,7 +61,7 @@ public class NodesController {
   ){
     var command = ConnectNodesCommandFromResourceAssembler.toCommandFromResource(fromNodeId, resource);
 
-    var link = nodeCommandService.handle(command);
+    var link = projectCommandService.handle(command);
     if (link.isEmpty()) {
       return ResponseEntity.notFound().build();
     }
@@ -80,7 +80,7 @@ public class NodesController {
     var command = AddMarkerCommandFromResourceAssembler
       .toCommandFromResource(nodeId, resource);
 
-    var optionalMarker = nodeCommandService.handle(command);
+    var optionalMarker = projectCommandService.handle(command);
 
     return optionalMarker
       .map(marker -> ResponseEntity.ok(
@@ -91,7 +91,7 @@ public class NodesController {
 
   @GetMapping()
   public List<NodeResource> getAllNodes() {
-    var nodes = nodeQueryService.handle(new GetAllNodesQuery());
+    var nodes = projectQueryService.handle(new GetAllNodesQuery());
 
     return nodes.stream()
       .map(NodeResourceFromEntityAssembler::toResourceFromEntity)
@@ -100,7 +100,7 @@ public class NodesController {
 
   @GetMapping("{id}")
   public ResponseEntity<NodeResource> getNodeById(@PathVariable Long id) {
-    var node = nodeQueryService.handle(new GetNodeByIdQuery(id));
+    var node = projectQueryService.handle(new GetNodeByIdQuery(id));
 
     return node.map(value -> ResponseEntity.ok(
       NodeResourceFromEntityAssembler.toResourceFromEntity(value)
@@ -109,7 +109,7 @@ public class NodesController {
 
   @GetMapping("/{nodeId}/links")
   public List<LinkResource> getLinksByNodeId(@PathVariable Long nodeId) {
-    return nodeQueryService.handle(new GetLinksByNodeIdQuery(nodeId))
+    return projectQueryService.handle(new GetLinksByNodeIdQuery(nodeId))
       .stream()
       .map(LinkResourceFromEntityAssembler::toResourceFromEntity)
       .toList();
@@ -117,7 +117,7 @@ public class NodesController {
 
   @GetMapping("/{nodeId}/markers")
   public List<MarkerResponse> getMarkersByNodeId(@PathVariable Long nodeId) {
-    return nodeQueryService.handle(new GetMarkersByNodeIdQuery(nodeId))
+    return projectQueryService.handle(new GetMarkersByNodeIdQuery(nodeId))
       .stream()
       .map(MarkerResourceFromEntityAssembler::toResourceFromEntity)
       .toList();

@@ -1,4 +1,4 @@
 package com.example.virtu360.tour.domain.model.queries;
 
-public record GetAllNodesQuery() {
+public record GetPublishedProjectsQuery() {
 }
