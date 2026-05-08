@@ -15,7 +15,8 @@ public class ProjectSummaryResourceFromEntityAssembler {
         entity.getTitle(),
         entity.getDescription(),
         entity.isPublished(),
-        entity.getNodes().size()
+        entity.getNodes().size(),
+        entity.getStartingNodeId()
     );
   }
 }
