@@ -2,14 +2,14 @@ package com.example.virtu360.shared.domain.model.aggregates;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.UUID;
+
 import lombok.Getter;
 import org.springframework.data.domain.AbstractAggregateRoot;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -26,8 +26,8 @@ public class AuditableAbstractAggregateRoot<T extends AbstractAggregateRoot<T>>
 
   @Id
   @Getter
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  @Column(nullable = false, updatable = false)
+  private UUID id;
 
   @Getter
   @Column(nullable = false, updatable = false)
@@ -42,6 +42,10 @@ public class AuditableAbstractAggregateRoot<T extends AbstractAggregateRoot<T>>
    */
   @PrePersist
   protected void onCreate() {
+    if (this.id == null) {
+      this.id = UUID.randomUUID();
+    }
+
     OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
     this.createdAt = now;
     this.updatedAt = now;

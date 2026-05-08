@@ -5,12 +5,14 @@ import com.example.virtu360.tour.interfaces.rest.resources.LinkResource;
 
 public class LinkResourceFromEntityAssembler {
 
-  private LinkResourceFromEntityAssembler(){
+  private LinkResourceFromEntityAssembler() {
   }
 
   public static LinkResource toResourceFromEntity(Link entity) {
+
     return new LinkResource(
-        entity.getFromNode().getId().toString(),
+        entity.getId(),
+        entity.getFromNode().getId(),
         entity.getToNodeId(),
         entity.getPosition().yaw(),
         entity.getPosition().pitch()
