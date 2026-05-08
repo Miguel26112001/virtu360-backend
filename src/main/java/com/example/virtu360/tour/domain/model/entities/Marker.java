@@ -1,9 +1,8 @@
 package com.example.virtu360.tour.domain.model.entities;
 
 import com.example.virtu360.shared.domain.model.entities.AuditableModel;
+import com.example.virtu360.tour.domain.model.valueobjects.MarkerType;
 import com.example.virtu360.tour.domain.model.valueobjects.Position;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,20 +19,18 @@ import java.util.UUID;
 )
 @Getter
 @NoArgsConstructor
-@JsonTypeInfo(
-    use = JsonTypeInfo.Id.NAME,
-    include = JsonTypeInfo.As.PROPERTY,
-    property = "type"
-)
-@JsonSubTypes({
-    @JsonSubTypes.Type(value = InfoMarker.class, name = "INFO"),
-    @JsonSubTypes.Type(value = VideoMarker.class, name = "VIDEO"),
-    @JsonSubTypes.Type(value = GalleryMarker.class, name = "GALLERY")
-})
 public abstract class Marker extends AuditableModel {
 
   @Id
   private UUID id;
+
+  @Enumerated(EnumType.STRING)
+  @Column(
+      name = "marker_type",
+      insertable = false,
+      updatable = false
+  )
+  private MarkerType type;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "node_id", nullable = false)
@@ -57,6 +54,7 @@ public abstract class Marker extends AuditableModel {
       String tooltip,
       String summary
   ) {
+
     this.id = UUID.randomUUID();
     this.position = Objects.requireNonNull(position);
     this.title = title;
@@ -74,22 +72,6 @@ public abstract class Marker extends AuditableModel {
 
   public void removeFromNode() {
     this.node = null;
-  }
-
-  // =========================
-  // TYPE HELPERS
-  // =========================
-
-  @Transient
-  public String getType() {
-
-    return switch (this) {
-      case InfoMarker infoMarker -> "INFO";
-      case VideoMarker videoMarker -> "VIDEO";
-      case GalleryMarker galleryMarker -> "GALLERY";
-      default -> "UNKNOWN";
-    };
-
   }
 
   // =========================

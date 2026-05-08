@@ -24,18 +24,22 @@ public class MarkerResourceFromEntityAssembler {
 
     List<String> imageUrls = null;
 
-    if (marker instanceof InfoMarker info) {
-      content = info.getContent();
-      description = info.getDescription();
-    }
+    switch (marker) {
 
-    if (marker instanceof VideoMarker video) {
-      videoUrl = video.getVideoUrl();
-      youtube = video.isYoutube();
-    }
+      case InfoMarker info -> {
+        content = info.getContent();
+        description = info.getDescription();
+      }
 
-    if (marker instanceof GalleryMarker gallery) {
-      imageUrls = gallery.getImageUrls();
+      case VideoMarker video -> {
+        videoUrl = video.getVideoUrl();
+        youtube = video.isYoutube();
+      }
+
+      case GalleryMarker gallery -> imageUrls = gallery.getImageUrls();
+
+      default -> {
+      }
     }
 
     return new MarkerResource(

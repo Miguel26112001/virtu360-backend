@@ -3,6 +3,7 @@ package com.example.virtu360.tour.application.internal.queryservices;
 import com.example.virtu360.tour.domain.model.aggregates.Project;
 import com.example.virtu360.tour.domain.model.entities.*;
 import com.example.virtu360.tour.domain.model.queries.*;
+import com.example.virtu360.tour.domain.model.valueobjects.MarkerType;
 import com.example.virtu360.tour.domain.services.ProjectQueryService;
 import com.example.virtu360.tour.infrastructure.persistence.jpa.repositories.LinkRepository;
 import com.example.virtu360.tour.infrastructure.persistence.jpa.repositories.MarkerRepository;
@@ -157,9 +158,14 @@ public class ProjectQueryServiceImpl implements ProjectQueryService {
         query.nodeId()
     );
 
-    return markerRepository.findInfoMarkersByNodeId(
-        query.nodeId()
-    );
+    return markerRepository
+        .findByNodeIdAndType(
+            query.nodeId(),
+            MarkerType.INFO
+        )
+        .stream()
+        .map(InfoMarker.class::cast)
+        .toList();
   }
 
   @Override
@@ -172,9 +178,14 @@ public class ProjectQueryServiceImpl implements ProjectQueryService {
         query.nodeId()
     );
 
-    return markerRepository.findVideoMarkersByNodeId(
-        query.nodeId()
-    );
+    return markerRepository
+        .findByNodeIdAndType(
+            query.nodeId(),
+            MarkerType.VIDEO
+        )
+        .stream()
+        .map(VideoMarker.class::cast)
+        .toList();
   }
 
   @Override
@@ -187,9 +198,14 @@ public class ProjectQueryServiceImpl implements ProjectQueryService {
         query.nodeId()
     );
 
-    return markerRepository.findGalleryMarkersByNodeId(
-        query.nodeId()
-    );
+    return markerRepository
+        .findByNodeIdAndType(
+            query.nodeId(),
+            MarkerType.GALLERY
+        )
+        .stream()
+        .map(GalleryMarker.class::cast)
+        .toList();
   }
 
   // =========================

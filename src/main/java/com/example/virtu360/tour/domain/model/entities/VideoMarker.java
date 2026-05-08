@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class VideoMarker extends Marker {
 
-  @Column(name = "video_url", nullable = false)
+  @Column(name = "video_url")
   private String videoUrl;
 
   @Column(name = "is_youtube")
@@ -42,6 +42,7 @@ public class VideoMarker extends Marker {
       String url,
       boolean yt
   ) {
+
     return new VideoMarker(
         pos,
         title,

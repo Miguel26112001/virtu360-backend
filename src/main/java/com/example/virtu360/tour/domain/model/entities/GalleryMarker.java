@@ -42,6 +42,7 @@ public class GalleryMarker extends Marker {
       String summary,
       List<String> urls
   ) {
+
     return new GalleryMarker(
         pos,
         title,
