@@ -1,5 +1,6 @@
 package com.example.virtu360.tour.interfaces.rest.resources;
 
+import java.util.List;
 import java.util.UUID;
 
 public record MarkerResource(
@@ -9,7 +10,17 @@ public record MarkerResource(
     PositionResource position,
     String tooltip,
     String title,
+    String summary,
+
+    // INFO
     String content,
-    String description
+    String description,
+
+    // VIDEO
+    String videoUrl,
+    Boolean youtube,
+
+    // GALLERY
+    List<String> imageUrls
 ) {
 }

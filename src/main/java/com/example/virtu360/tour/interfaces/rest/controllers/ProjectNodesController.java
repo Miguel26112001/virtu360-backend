@@ -3,10 +3,7 @@ package com.example.virtu360.tour.interfaces.rest.controllers;
 import com.example.virtu360.tour.domain.model.commands.RemoveLinkCommand;
 import com.example.virtu360.tour.domain.model.commands.RemoveMarkerCommand;
 import com.example.virtu360.tour.domain.model.commands.RemoveNodeCommand;
-import com.example.virtu360.tour.domain.model.queries.GetLinksByNodeIdQuery;
-import com.example.virtu360.tour.domain.model.queries.GetMarkersByNodeIdQuery;
-import com.example.virtu360.tour.domain.model.queries.GetNodeByIdQuery;
-import com.example.virtu360.tour.domain.model.queries.GetNodesByProjectIdQuery;
+import com.example.virtu360.tour.domain.model.queries.*;
 import com.example.virtu360.tour.domain.services.ProjectCommandService;
 import com.example.virtu360.tour.domain.services.ProjectQueryService;
 import com.example.virtu360.tour.interfaces.rest.resources.*;
@@ -41,9 +38,9 @@ public class ProjectNodesController {
     this.projectQueryService = projectQueryService;
   }
 
-  // =========================
-  // CREATE NODE
-  // =========================
+  // =========================================================
+  // NODES
+  // =========================================================
 
   @PostMapping(
       value = "/nodes",
@@ -72,10 +69,6 @@ public class ProjectNodesController {
     return ResponseEntity.ok(nodeResource);
   }
 
-  // =========================
-  // REMOVE NODE
-  // =========================
-
   @DeleteMapping("/nodes/{nodeId}")
   public ResponseEntity<Void> removeNode(
       @PathVariable UUID projectId,
@@ -92,9 +85,53 @@ public class ProjectNodesController {
     return ResponseEntity.noContent().build();
   }
 
-  // =========================
-  // CONNECT NODES
-  // =========================
+  @GetMapping("/nodes")
+  public ResponseEntity<List<NodeResource>> getNodes(
+      @PathVariable UUID projectId
+  ) {
+
+    var query =
+        new GetNodesByProjectIdQuery(projectId);
+
+    var nodes =
+        projectQueryService.handle(query);
+
+    var resources = nodes.stream()
+        .map(NodeResourceFromEntityAssembler::toResourceFromEntity)
+        .toList();
+
+    return ResponseEntity.ok(resources);
+  }
+
+  @GetMapping("/nodes/{nodeId}")
+  public ResponseEntity<NodeResource> getNodeById(
+      @PathVariable UUID projectId,
+      @PathVariable UUID nodeId
+  ) {
+
+    var query =
+        new GetNodeByIdQuery(
+            projectId,
+            nodeId
+        );
+
+    var optionalNode =
+        projectQueryService.handle(query);
+
+    if (optionalNode.isEmpty()) {
+      return ResponseEntity.notFound().build();
+    }
+
+    var resource =
+        NodeResourceFromEntityAssembler
+            .toResourceFromEntity(optionalNode.get());
+
+    return ResponseEntity.ok(resource);
+  }
+
+  // =========================================================
+  // LINKS
+  // =========================================================
 
   @PostMapping("/nodes/{fromNodeId}/links")
   public ResponseEntity<LinkResource> connectNodes(
@@ -125,10 +162,6 @@ public class ProjectNodesController {
     return ResponseEntity.ok(linkResource);
   }
 
-  // =========================
-  // REMOVE LINK
-  // =========================
-
   @DeleteMapping("/nodes/{fromNodeId}/links/{linkId}")
   public ResponseEntity<Void> removeLink(
       @PathVariable UUID projectId,
@@ -146,117 +179,6 @@ public class ProjectNodesController {
 
     return ResponseEntity.noContent().build();
   }
-
-  // =========================
-  // ADD MARKER
-  // =========================
-
-  @PostMapping("/nodes/{nodeId}/markers")
-  public ResponseEntity<MarkerResource> addMarker(
-      @PathVariable UUID projectId,
-      @PathVariable UUID nodeId,
-      @RequestBody AddMarkerToNodeResource resource
-  ) {
-
-    var command =
-        AddMarkerCommandFromResourceAssembler
-            .toCommandFromResource(
-                projectId,
-                nodeId,
-                resource
-            );
-
-    var optionalMarker =
-        projectCommandService.handle(command);
-
-    if (optionalMarker.isEmpty()) {
-      return ResponseEntity.badRequest().build();
-    }
-
-    var markerResource =
-        MarkerResourceFromEntityAssembler
-            .toResourceFromEntity(optionalMarker.get());
-
-    return ResponseEntity.ok(markerResource);
-  }
-
-  // =========================
-  // REMOVE MARKER
-  // =========================
-
-  @DeleteMapping("/nodes/{nodeId}/markers/{markerId}")
-  public ResponseEntity<Void> removeMarker(
-      @PathVariable UUID projectId,
-      @PathVariable UUID nodeId,
-      @PathVariable UUID markerId
-  ) {
-
-    var command = new RemoveMarkerCommand(
-        projectId,
-        nodeId,
-        markerId
-    );
-
-    projectCommandService.handle(command);
-
-    return ResponseEntity.noContent().build();
-  }
-
-  // =========================
-  // GET ALL NODES
-  // =========================
-
-  @GetMapping("/nodes")
-  public ResponseEntity<List<NodeResource>> getNodes(
-      @PathVariable UUID projectId
-  ) {
-
-    var query =
-        new GetNodesByProjectIdQuery(projectId);
-
-    var nodes =
-        projectQueryService.handle(query);
-
-    var resources = nodes.stream()
-        .map(NodeResourceFromEntityAssembler::toResourceFromEntity)
-        .toList();
-
-    return ResponseEntity.ok(resources);
-  }
-
-  // =========================
-  // GET NODE BY ID
-  // =========================
-
-  @GetMapping("/nodes/{nodeId}")
-  public ResponseEntity<NodeResource> getNodeById(
-      @PathVariable UUID projectId,
-      @PathVariable UUID nodeId
-  ) {
-
-    var query =
-        new GetNodeByIdQuery(
-            projectId,
-            nodeId
-        );
-
-    var optionalNode =
-        projectQueryService.handle(query);
-
-    if (optionalNode.isEmpty()) {
-      return ResponseEntity.notFound().build();
-    }
-
-    var resource =
-        NodeResourceFromEntityAssembler
-            .toResourceFromEntity(optionalNode.get());
-
-    return ResponseEntity.ok(resource);
-  }
-
-  // =========================
-  // GET LINKS
-  // =========================
 
   @GetMapping("/nodes/{nodeId}/links")
   public ResponseEntity<List<LinkResource>> getLinks(
@@ -280,9 +202,174 @@ public class ProjectNodesController {
     return ResponseEntity.ok(resources);
   }
 
-  // =========================
-  // GET MARKERS
-  // =========================
+  // =========================================================
+  // INFO MARKERS
+  // =========================================================
+
+  @PostMapping("/nodes/{nodeId}/info-markers")
+  public ResponseEntity<MarkerResource> addInfoMarker(
+      @PathVariable UUID projectId,
+      @PathVariable UUID nodeId,
+      @RequestBody AddInfoMarkerResource resource
+  ) {
+
+    var command =
+        AddInfoMarkerCommandFromResourceAssembler
+            .toCommandFromResource(
+                projectId,
+                nodeId,
+                resource
+            );
+
+    var optionalMarker =
+        projectCommandService.handle(command);
+
+    if (optionalMarker.isEmpty()) {
+      return ResponseEntity.badRequest().build();
+    }
+
+    var markerResource =
+        MarkerResourceFromEntityAssembler
+            .toResourceFromEntity(optionalMarker.get());
+
+    return ResponseEntity.ok(markerResource);
+  }
+
+  @GetMapping("/nodes/{nodeId}/info-markers")
+  public ResponseEntity<List<MarkerResource>> getInfoMarkers(
+      @PathVariable UUID projectId,
+      @PathVariable UUID nodeId
+  ) {
+
+    var query =
+        new GetInfoMarkersByNodeIdQuery(
+            projectId,
+            nodeId
+        );
+
+    var markers =
+        projectQueryService.handle(query);
+
+    var resources = markers.stream()
+        .map(MarkerResourceFromEntityAssembler::toResourceFromEntity)
+        .toList();
+
+    return ResponseEntity.ok(resources);
+  }
+
+  // =========================================================
+  // VIDEO MARKERS
+  // =========================================================
+
+  @PostMapping("/nodes/{nodeId}/video-markers")
+  public ResponseEntity<MarkerResource> addVideoMarker(
+      @PathVariable UUID projectId,
+      @PathVariable UUID nodeId,
+      @RequestBody AddVideoMarkerResource resource
+  ) {
+
+    var command =
+        AddVideoMarkerCommandFromResourceAssembler
+            .toCommandFromResource(
+                projectId,
+                nodeId,
+                resource
+            );
+
+    var optionalMarker =
+        projectCommandService.handle(command);
+
+    if (optionalMarker.isEmpty()) {
+      return ResponseEntity.badRequest().build();
+    }
+
+    var markerResource =
+        MarkerResourceFromEntityAssembler
+            .toResourceFromEntity(optionalMarker.get());
+
+    return ResponseEntity.ok(markerResource);
+  }
+
+  @GetMapping("/nodes/{nodeId}/video-markers")
+  public ResponseEntity<List<MarkerResource>> getVideoMarkers(
+      @PathVariable UUID projectId,
+      @PathVariable UUID nodeId
+  ) {
+
+    var query =
+        new GetVideoMarkersByNodeIdQuery(
+            projectId,
+            nodeId
+        );
+
+    var markers =
+        projectQueryService.handle(query);
+
+    var resources = markers.stream()
+        .map(MarkerResourceFromEntityAssembler::toResourceFromEntity)
+        .toList();
+
+    return ResponseEntity.ok(resources);
+  }
+
+  // =========================================================
+  // GALLERY MARKERS
+  // =========================================================
+
+  @PostMapping("/nodes/{nodeId}/gallery-markers")
+  public ResponseEntity<MarkerResource> addGalleryMarker(
+      @PathVariable UUID projectId,
+      @PathVariable UUID nodeId,
+      @RequestBody AddGalleryMarkerResource resource
+  ) {
+
+    var command =
+        AddGalleryMarkerCommandFromResourceAssembler
+            .toCommandFromResource(
+                projectId,
+                nodeId,
+                resource
+            );
+
+    var optionalMarker =
+        projectCommandService.handle(command);
+
+    if (optionalMarker.isEmpty()) {
+      return ResponseEntity.badRequest().build();
+    }
+
+    var markerResource =
+        MarkerResourceFromEntityAssembler
+            .toResourceFromEntity(optionalMarker.get());
+
+    return ResponseEntity.ok(markerResource);
+  }
+
+  @GetMapping("/nodes/{nodeId}/gallery-markers")
+  public ResponseEntity<List<MarkerResource>> getGalleryMarkers(
+      @PathVariable UUID projectId,
+      @PathVariable UUID nodeId
+  ) {
+
+    var query =
+        new GetGalleryMarkersByNodeIdQuery(
+            projectId,
+            nodeId
+        );
+
+    var markers =
+        projectQueryService.handle(query);
+
+    var resources = markers.stream()
+        .map(MarkerResourceFromEntityAssembler::toResourceFromEntity)
+        .toList();
+
+    return ResponseEntity.ok(resources);
+  }
+
+  // =========================================================
+  // GENERIC MARKERS
+  // =========================================================
 
   @GetMapping("/nodes/{nodeId}/markers")
   public ResponseEntity<List<MarkerResource>> getMarkers(
@@ -304,5 +391,23 @@ public class ProjectNodesController {
         .toList();
 
     return ResponseEntity.ok(resources);
+  }
+
+  @DeleteMapping("/nodes/{nodeId}/markers/{markerId}")
+  public ResponseEntity<Void> removeMarker(
+      @PathVariable UUID projectId,
+      @PathVariable UUID nodeId,
+      @PathVariable UUID markerId
+  ) {
+
+    var command = new RemoveMarkerCommand(
+        projectId,
+        nodeId,
+        markerId
+    );
+
+    projectCommandService.handle(command);
+
+    return ResponseEntity.noContent().build();
   }
 }

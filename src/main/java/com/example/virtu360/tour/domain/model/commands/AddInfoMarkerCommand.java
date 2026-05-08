@@ -1,17 +1,15 @@
 package com.example.virtu360.tour.domain.model.commands;
 
-import com.example.virtu360.tour.domain.model.valueobjects.MarkerType;
-
 import java.util.UUID;
 
-public record AddMarkerCommand(
+public record AddInfoMarkerCommand(
     UUID projectId,
     UUID nodeId,
-    MarkerType type,
     double yaw,
     double pitch,
-    String tooltip,
     String title,
+    String tooltip,
+    String summary,
     String content,
     String description
 ) {

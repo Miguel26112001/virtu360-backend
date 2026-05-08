@@ -27,17 +27,28 @@ public class Project extends AuditableAbstractAggregateRoot<Project> {
   @Column(nullable = false)
   private boolean published = false;
 
+  @Column(name = "starting_node_id")
+  private UUID startingNodeId;
+
   @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
   private final List<Node> nodes = new ArrayList<>();
 
   // =========================
   // FACTORY
   // =========================
-  public static Project create(String ownerId, String title, String description) {
+  public static Project create(
+      String ownerId,
+      String title,
+      String description
+  ) {
+
     Project project = new Project();
-    project.ownerId = Objects.requireNonNull(ownerId);
-    project.title = Objects.requireNonNull(title);
+
+    project.ownerId = ownerId;
+    project.title = title;
     project.description = description;
+    project.published = false;
+
     return project;
   }
 
@@ -51,23 +62,31 @@ public class Project extends AuditableAbstractAggregateRoot<Project> {
   // =========================
   // NODE MANAGEMENT
   // =========================
-  public Node addNode(Node node) {
+
+  public void addNode(Node node) {
+
     Objects.requireNonNull(node);
 
     boolean exists = nodes.stream()
         .anyMatch(n -> n.getId().equals(node.getId()));
 
     if (exists) {
-      throw new IllegalStateException("Node already exists in project");
+      throw new IllegalStateException(
+          "Node already exists in project"
+      );
     }
 
     node.assignTo(this);
+
     nodes.add(node);
 
-    return node;
+    if (startingNodeId == null) {
+      startingNodeId = node.getId();
+    }
   }
 
   public void removeNode(Node node) {
+
     Objects.requireNonNull(node);
 
     boolean hasIncomingLinks = nodes.stream()
@@ -77,11 +96,21 @@ public class Project extends AuditableAbstractAggregateRoot<Project> {
     boolean hasOutgoingLinks = !node.getLinks().isEmpty();
 
     if (hasIncomingLinks || hasOutgoingLinks) {
-      throw new IllegalStateException("Cannot remove node with active links");
+      throw new IllegalStateException(
+          "Cannot remove node with active links"
+      );
     }
 
     nodes.remove(node);
+
     node.removeFromProject();
+
+    if (node.getId().equals(startingNodeId)) {
+
+      startingNodeId = nodes.isEmpty()
+          ? null
+          : nodes.getFirst().getId();
+    }
   }
 
   public Node findNode(UUID nodeId) {
@@ -94,6 +123,7 @@ public class Project extends AuditableAbstractAggregateRoot<Project> {
   // =========================
   // LINK MANAGEMENT
   // =========================
+
   public void connectNodes(UUID fromNodeId, UUID toNodeId, Position position) {
     Objects.requireNonNull(fromNodeId);
     Objects.requireNonNull(toNodeId);
@@ -111,9 +141,19 @@ public class Project extends AuditableAbstractAggregateRoot<Project> {
   // =========================
   // PUBLISHING
   // =========================
+
   public void publish() {
+
     if (nodes.isEmpty()) {
-      throw new IllegalStateException("Project must contain at least one node");
+      throw new IllegalStateException(
+          "Project must contain at least one node"
+      );
+    }
+
+    if (startingNodeId == null) {
+      throw new IllegalStateException(
+          "Project must have a starting node"
+      );
     }
 
     this.published = true;
@@ -121,5 +161,38 @@ public class Project extends AuditableAbstractAggregateRoot<Project> {
 
   public void unpublish() {
     this.published = false;
+  }
+
+  // =========================
+  // STARTING NODE
+  // =========================
+
+  public Node getStartingNode() {
+
+    if (startingNodeId == null) {
+      throw new IllegalStateException("Project has no starting node");
+    }
+
+    return findNode(startingNodeId);
+  }
+
+  public void setStartingNode(UUID nodeId) {
+    if (!hasNode(nodeId)) {
+      throw new IllegalArgumentException(
+          "Node does not belong to project"
+      );
+    }
+
+    this.startingNodeId = nodeId;
+  }
+
+  // =========================
+  // HELPERS
+  // =========================
+
+  public boolean hasNode(UUID nodeId) {
+
+    return nodes.stream()
+        .anyMatch(node -> node.getId().equals(nodeId));
   }
 }

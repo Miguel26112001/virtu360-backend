@@ -2,9 +2,7 @@ package com.example.virtu360.tour.application.internal.commandservices;
 
 import com.example.virtu360.tour.domain.model.aggregates.Project;
 import com.example.virtu360.tour.domain.model.commands.*;
-import com.example.virtu360.tour.domain.model.entities.Link;
-import com.example.virtu360.tour.domain.model.entities.Node;
-import com.example.virtu360.tour.domain.model.entities.Marker;
+import com.example.virtu360.tour.domain.model.entities.*;
 import com.example.virtu360.tour.domain.model.valueobjects.Position;
 import com.example.virtu360.tour.domain.services.ExternalCloudinaryService;
 import com.example.virtu360.tour.domain.services.ProjectCommandService;
@@ -173,19 +171,64 @@ public class ProjectCommandServiceImpl implements ProjectCommandService {
   // =========================
 
   @Override
-  public Optional<Marker> handle(AddMarkerCommand command) {
+  public Optional<InfoMarker> handle(AddInfoMarkerCommand command) {
 
     Project project = getProject(command.projectId());
 
     Node node = project.findNode(command.nodeId());
 
-    Marker marker = Marker.create(
-        command.type(),
+    InfoMarker marker = InfoMarker.create(
         new Position(command.yaw(), command.pitch()),
-        command.tooltip(),
         command.title(),
+        command.tooltip(),
+        command.summary(),
         command.content(),
         command.description()
+    );
+
+    node.addMarker(marker);
+
+    projectRepository.save(project);
+
+    return Optional.of(marker);
+  }
+
+  @Override
+  public Optional<VideoMarker> handle(AddVideoMarkerCommand command) {
+
+    Project project = getProject(command.projectId());
+
+    Node node = project.findNode(command.nodeId());
+
+    VideoMarker marker = VideoMarker.create(
+        new Position(command.yaw(), command.pitch()),
+        command.title(),
+        command.tooltip(),
+        command.summary(),
+        command.videoUrl(),
+        command.youtube()
+    );
+
+    node.addMarker(marker);
+
+    projectRepository.save(project);
+
+    return Optional.of(marker);
+  }
+
+  @Override
+  public Optional<GalleryMarker> handle(AddGalleryMarkerCommand command) {
+
+    Project project = getProject(command.projectId());
+
+    Node node = project.findNode(command.nodeId());
+
+    GalleryMarker marker = GalleryMarker.create(
+        new Position(command.yaw(), command.pitch()),
+        command.title(),
+        command.tooltip(),
+        command.summary(),
+        command.imageUrls()
     );
 
     node.addMarker(marker);

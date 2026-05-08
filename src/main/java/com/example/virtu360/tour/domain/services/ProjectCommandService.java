@@ -2,9 +2,7 @@ package com.example.virtu360.tour.domain.services;
 
 import com.example.virtu360.tour.domain.model.aggregates.Project;
 import com.example.virtu360.tour.domain.model.commands.*;
-import com.example.virtu360.tour.domain.model.entities.Link;
-import com.example.virtu360.tour.domain.model.entities.Marker;
-import com.example.virtu360.tour.domain.model.entities.Node;
+import com.example.virtu360.tour.domain.model.entities.*;
 
 import java.util.Optional;
 
@@ -30,7 +28,11 @@ public interface ProjectCommandService {
   void handle(RemoveLinkCommand command);
 
   // MARKERS
-  Optional<Marker> handle(AddMarkerCommand command);
+  Optional<InfoMarker> handle(AddInfoMarkerCommand command);
+
+  Optional<VideoMarker> handle(AddVideoMarkerCommand command);
+
+  Optional<GalleryMarker> handle(AddGalleryMarkerCommand command);
 
   void handle(RemoveMarkerCommand command);
 }

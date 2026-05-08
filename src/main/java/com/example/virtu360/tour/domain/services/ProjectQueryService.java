@@ -1,9 +1,7 @@
 package com.example.virtu360.tour.domain.services;
 
 import com.example.virtu360.tour.domain.model.aggregates.Project;
-import com.example.virtu360.tour.domain.model.entities.Link;
-import com.example.virtu360.tour.domain.model.entities.Marker;
-import com.example.virtu360.tour.domain.model.entities.Node;
+import com.example.virtu360.tour.domain.model.entities.*;
 import com.example.virtu360.tour.domain.model.queries.*;
 
 import java.util.List;
@@ -14,6 +12,7 @@ public interface ProjectQueryService {
   // =========================
   // PROJECTS
   // =========================
+
   Optional<Project> handle(GetProjectByIdQuery query);
 
   Optional<Project> handle(GetPublishedProjectByIdQuery query);
@@ -25,6 +24,7 @@ public interface ProjectQueryService {
   // =========================
   // NODES
   // =========================
+
   List<Node> handle(GetNodesByProjectIdQuery query);
 
   Optional<Node> handle(GetNodeByIdQuery query);
@@ -34,10 +34,18 @@ public interface ProjectQueryService {
   // =========================
   // LINKS
   // =========================
+
   List<Link> handle(GetLinksByNodeIdQuery query);
 
   // =========================
   // MARKERS
   // =========================
+
   List<Marker> handle(GetMarkersByNodeIdQuery query);
+
+  List<InfoMarker> handle(GetInfoMarkersByNodeIdQuery query);
+
+  List<VideoMarker> handle(GetVideoMarkersByNodeIdQuery query);
+
+  List<GalleryMarker> handle(GetGalleryMarkersByNodeIdQuery query);
 }
