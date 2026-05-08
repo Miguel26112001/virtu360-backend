@@ -102,6 +102,58 @@ public class Node extends AuditableModel {
     marker.removeFromNode();
   }
 
+  public Marker findMarker(UUID markerId) {
+
+    return markers.stream()
+        .filter(marker ->
+            marker.getId().equals(markerId)
+        )
+        .findFirst()
+        .orElseThrow(() ->
+            new IllegalArgumentException(
+                "Marker not found"
+            ));
+  }
+
+  public InfoMarker findInfoMarker(UUID markerId) {
+
+    Marker marker = findMarker(markerId);
+
+    if (!(marker instanceof InfoMarker infoMarker)) {
+      throw new IllegalArgumentException(
+          "Marker is not INFO type"
+      );
+    }
+
+    return infoMarker;
+  }
+
+  public VideoMarker findVideoMarker(UUID markerId) {
+
+    Marker marker = findMarker(markerId);
+
+    if (!(marker instanceof VideoMarker videoMarker)) {
+      throw new IllegalArgumentException(
+          "Marker is not VIDEO type"
+      );
+    }
+
+    return videoMarker;
+  }
+
+  public GalleryMarker findGalleryMarker(UUID markerId) {
+
+    Marker marker = findMarker(markerId);
+
+    if (!(marker instanceof GalleryMarker galleryMarker)) {
+      throw new IllegalArgumentException(
+          "Marker is not GALLERY type"
+      );
+    }
+
+    return galleryMarker;
+  }
+
   // =========================
   // LINKS
   // =========================
@@ -146,6 +198,19 @@ public class Node extends AuditableModel {
   public void removeLink(Link link) {
     links.remove(link);
     link.removeFromNode();
+  }
+
+  public Link findLink(UUID linkId) {
+
+    return links.stream()
+        .filter(link ->
+            link.getId().equals(linkId)
+        )
+        .findFirst()
+        .orElseThrow(() ->
+            new IllegalArgumentException(
+                "Link not found"
+            ));
   }
 
   // =========================

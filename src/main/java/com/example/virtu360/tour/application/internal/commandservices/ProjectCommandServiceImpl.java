@@ -155,11 +155,7 @@ public class ProjectCommandServiceImpl implements ProjectCommandService {
 
     Node fromNode = project.findNode(command.fromNodeId());
 
-    Link link = fromNode.getLinks().stream()
-        .filter(l -> l.getId().equals(command.linkId()))
-        .findFirst()
-        .orElseThrow(() ->
-            new IllegalArgumentException("Link not found"));
+    Link link = fromNode.findLink(command.linkId());
 
     fromNode.removeLink(link);
 
@@ -239,17 +235,90 @@ public class ProjectCommandServiceImpl implements ProjectCommandService {
   }
 
   @Override
+  public Optional<InfoMarker> handle(
+      UpdateInfoMarkerCommand command
+  ) {
+
+    Project project = getProject(command.projectId());
+
+    Node node = project.findNode(command.nodeId());
+
+    InfoMarker marker =
+        node.findInfoMarker(command.markerId());
+
+    marker.update(
+        command.position(),
+        command.title(),
+        command.tooltip(),
+        command.summary(),
+        command.content(),
+        command.description()
+    );
+
+    projectRepository.save(project);
+
+    return Optional.of(marker);
+  }
+
+  @Override
+  public Optional<VideoMarker> handle(
+      UpdateVideoMarkerCommand command
+  ) {
+
+    Project project = getProject(command.projectId());
+
+    Node node = project.findNode(command.nodeId());
+
+    VideoMarker marker =
+        node.findVideoMarker(command.markerId());
+
+    marker.update(
+        command.position(),
+        command.title(),
+        command.tooltip(),
+        command.summary(),
+        command.videoUrl(),
+        command.youtube()
+    );
+
+    projectRepository.save(project);
+
+    return Optional.of(marker);
+  }
+
+  @Override
+  public Optional<GalleryMarker> handle(
+      UpdateGalleryMarkerCommand command
+  ) {
+
+    Project project = getProject(command.projectId());
+
+    Node node = project.findNode(command.nodeId());
+
+    GalleryMarker marker =
+        node.findGalleryMarker(command.markerId());
+
+    marker.update(
+        command.position(),
+        command.title(),
+        command.tooltip(),
+        command.summary(),
+        command.imageUrls()
+    );
+
+    projectRepository.save(project);
+
+    return Optional.of(marker);
+  }
+
+  @Override
   public void handle(RemoveMarkerCommand command) {
 
     Project project = getProject(command.projectId());
 
     Node node = project.findNode(command.nodeId());
 
-    Marker marker = node.getMarkers().stream()
-        .filter(m -> m.getId().equals(command.markerId()))
-        .findFirst()
-        .orElseThrow(() ->
-            new IllegalArgumentException("Marker not found"));
+    Marker marker = node.findMarker(command.markerId());
 
     node.removeMarker(marker);
 

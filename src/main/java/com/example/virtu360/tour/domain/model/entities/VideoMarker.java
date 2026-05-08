@@ -52,4 +52,24 @@ public class VideoMarker extends Marker {
         yt
     );
   }
+
+  public void update(
+      Position position,
+      String title,
+      String tooltip,
+      String summary,
+      String videoUrl,
+      boolean youtube
+  ) {
+
+    updateBase(
+        position,
+        title,
+        tooltip,
+        summary
+    );
+
+    this.videoUrl = videoUrl;
+    this.youtube = youtube;
+  }
 }

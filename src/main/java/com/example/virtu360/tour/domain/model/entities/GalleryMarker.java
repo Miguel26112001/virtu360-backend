@@ -51,4 +51,23 @@ public class GalleryMarker extends Marker {
         urls
     );
   }
+
+  public void update(
+      Position position,
+      String title,
+      String tooltip,
+      String summary,
+      List<String> imageUrls
+  ) {
+
+    updateBase(
+        position,
+        title,
+        tooltip,
+        summary
+    );
+
+    this.imageUrls.clear();
+    this.imageUrls.addAll(imageUrls);
+  }
 }

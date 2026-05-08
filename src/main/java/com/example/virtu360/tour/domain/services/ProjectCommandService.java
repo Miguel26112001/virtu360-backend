@@ -34,5 +34,11 @@ public interface ProjectCommandService {
 
   Optional<GalleryMarker> handle(AddGalleryMarkerCommand command);
 
+  Optional<InfoMarker> handle(UpdateInfoMarkerCommand command);
+
+  Optional<VideoMarker> handle(UpdateVideoMarkerCommand command);
+
+  Optional<GalleryMarker> handle(UpdateGalleryMarkerCommand command);
+
   void handle(RemoveMarkerCommand command);
 }

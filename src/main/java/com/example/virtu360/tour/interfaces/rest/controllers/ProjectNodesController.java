@@ -257,6 +257,37 @@ public class ProjectNodesController {
     return ResponseEntity.ok(resources);
   }
 
+  @PutMapping("/nodes/{nodeId}/info-markers/{markerId}")
+  public ResponseEntity<MarkerResource> updateInfoMarker(
+      @PathVariable UUID projectId,
+      @PathVariable UUID nodeId,
+      @PathVariable UUID markerId,
+      @RequestBody UpdateInfoMarkerResource resource
+  ) {
+
+    var command =
+        UpdateInfoMarkerCommandFromResourceAssembler
+            .toCommandFromResource(
+                projectId,
+                nodeId,
+                markerId,
+                resource
+            );
+
+    var optionalMarker =
+        projectCommandService.handle(command);
+
+    if (optionalMarker.isEmpty()) {
+      return ResponseEntity.badRequest().build();
+    }
+
+    var markerResource =
+        MarkerResourceFromEntityAssembler
+            .toResourceFromEntity(optionalMarker.get());
+
+    return ResponseEntity.ok(markerResource);
+  }
+
   // =========================================================
   // VIDEO MARKERS
   // =========================================================
@@ -312,6 +343,37 @@ public class ProjectNodesController {
     return ResponseEntity.ok(resources);
   }
 
+  @PutMapping("/nodes/{nodeId}/video-markers/{markerId}")
+  public ResponseEntity<MarkerResource> updateVideoMarker(
+      @PathVariable UUID projectId,
+      @PathVariable UUID nodeId,
+      @PathVariable UUID markerId,
+      @RequestBody UpdateVideoMarkerResource resource
+  ) {
+
+    var command =
+        UpdateVideoMarkerCommandFromResourceAssembler
+            .toCommandFromResource(
+                projectId,
+                nodeId,
+                markerId,
+                resource
+            );
+
+    var optionalMarker =
+        projectCommandService.handle(command);
+
+    if (optionalMarker.isEmpty()) {
+      return ResponseEntity.badRequest().build();
+    }
+
+    var markerResource =
+        MarkerResourceFromEntityAssembler
+            .toResourceFromEntity(optionalMarker.get());
+
+    return ResponseEntity.ok(markerResource);
+  }
+
   // =========================================================
   // GALLERY MARKERS
   // =========================================================
@@ -365,6 +427,37 @@ public class ProjectNodesController {
         .toList();
 
     return ResponseEntity.ok(resources);
+  }
+
+  @PutMapping("/nodes/{nodeId}/gallery-markers/{markerId}")
+  public ResponseEntity<MarkerResource> updateGalleryMarker(
+      @PathVariable UUID projectId,
+      @PathVariable UUID nodeId,
+      @PathVariable UUID markerId,
+      @RequestBody UpdateGalleryMarkerResource resource
+  ) {
+
+    var command =
+        UpdateGalleryMarkerCommandFromResourceAssembler
+            .toCommandFromResource(
+                projectId,
+                nodeId,
+                markerId,
+                resource
+            );
+
+    var optionalMarker =
+        projectCommandService.handle(command);
+
+    if (optionalMarker.isEmpty()) {
+      return ResponseEntity.badRequest().build();
+    }
+
+    var markerResource =
+        MarkerResourceFromEntityAssembler
+            .toResourceFromEntity(optionalMarker.get());
+
+    return ResponseEntity.ok(markerResource);
   }
 
   // =========================================================

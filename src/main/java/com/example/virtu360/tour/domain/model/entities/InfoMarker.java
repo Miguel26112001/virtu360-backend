@@ -51,4 +51,24 @@ public class InfoMarker extends Marker {
         description
     );
   }
+
+  public void update(
+      Position position,
+      String title,
+      String tooltip,
+      String summary,
+      String content,
+      String description
+  ) {
+
+    updateBase(
+        position,
+        title,
+        tooltip,
+        summary
+    );
+
+    this.content = content;
+    this.description = description;
+  }
 }

@@ -62,6 +62,18 @@ public abstract class Marker extends AuditableModel {
     this.summary = summary;
   }
 
+  protected void updateBase(
+      Position position,
+      String title,
+      String tooltip,
+      String summary
+  ) {
+    this.position = position;
+    this.title = title;
+    this.tooltip = tooltip;
+    this.summary = summary;
+  }
+
   // =========================
   // RELATION MANAGEMENT
   // =========================
