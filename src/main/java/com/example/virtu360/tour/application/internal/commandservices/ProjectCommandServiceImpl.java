@@ -78,6 +78,24 @@ public class ProjectCommandServiceImpl implements ProjectCommandService {
     return Optional.of(project);
   }
 
+  @Override
+  public Optional<Project> handle(
+      UpdateProjectCommand command
+  ) {
+
+    Project project = getProject(command.projectId());
+
+    project.update(
+        command.title(),
+        command.description(),
+        command.startingNodeId()
+    );
+
+    projectRepository.save(project);
+
+    return Optional.of(project);
+  }
+
   // =========================
   // NODES
   // =========================

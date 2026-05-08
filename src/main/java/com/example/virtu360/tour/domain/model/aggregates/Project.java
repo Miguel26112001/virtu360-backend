@@ -55,6 +55,7 @@ public class Project extends AuditableAbstractAggregateRoot<Project> {
   // =========================
   // READ MODEL
   // =========================
+
   public List<Node> getNodes() {
     return Collections.unmodifiableList(nodes);
   }
@@ -177,13 +178,34 @@ public class Project extends AuditableAbstractAggregateRoot<Project> {
   }
 
   public void setStartingNode(UUID nodeId) {
-    if (!hasNode(nodeId)) {
+    if (hasNode(nodeId)) {
       throw new IllegalArgumentException(
           "Node does not belong to project"
       );
     }
 
     this.startingNodeId = nodeId;
+  }
+
+  public void update(
+      String title,
+      String description,
+      UUID startingNodeId
+  ) {
+
+    this.title = title;
+    this.description = description;
+
+    if (startingNodeId != null) {
+
+      if (hasNode(startingNodeId)) {
+        throw new IllegalArgumentException(
+            "Starting node does not belong to project"
+        );
+      }
+
+      this.startingNodeId = startingNodeId;
+    }
   }
 
   // =========================
@@ -193,6 +215,6 @@ public class Project extends AuditableAbstractAggregateRoot<Project> {
   public boolean hasNode(UUID nodeId) {
 
     return nodes.stream()
-        .anyMatch(node -> node.getId().equals(nodeId));
+        .noneMatch(node -> node.getId().equals(nodeId));
   }
 }

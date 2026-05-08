@@ -167,4 +167,35 @@ public class ProjectsController {
 
     return ResponseEntity.noContent().build();
   }
+
+  // =========================
+  // UPDATE
+  // =========================
+
+  @PutMapping("/{projectId}")
+  public ResponseEntity<ProjectResource> updateProject(
+      @PathVariable UUID projectId,
+      @RequestBody UpdateProjectResource resource
+  ) {
+
+    var command =
+        UpdateProjectCommandFromResourceAssembler
+            .toCommandFromResource(
+                projectId,
+                resource
+            );
+
+    var optionalProject =
+        projectCommandService.handle(command);
+
+    if (optionalProject.isEmpty()) {
+      return ResponseEntity.badRequest().build();
+    }
+
+    var projectResource =
+        ProjectResourceFromEntityAssembler
+            .toResourceFromEntity(optionalProject.get());
+
+    return ResponseEntity.ok(projectResource);
+  }
 }

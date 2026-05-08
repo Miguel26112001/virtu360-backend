@@ -17,6 +17,8 @@ public interface ProjectCommandService {
 
   Optional<Project> handle(UnpublishProjectCommand command);
 
+  Optional<Project> handle(UpdateProjectCommand command);
+
   // NODES
   Optional<Node> handle(CreateNodeCommand command);
 
