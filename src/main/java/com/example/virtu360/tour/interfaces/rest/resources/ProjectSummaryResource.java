@@ -7,6 +7,7 @@ public record ProjectSummaryResource(
     String title,
     String description,
     boolean published,
-    int totalNodes
+    int totalNodes,
+    UUID startingNodeId
 ) {
 }
