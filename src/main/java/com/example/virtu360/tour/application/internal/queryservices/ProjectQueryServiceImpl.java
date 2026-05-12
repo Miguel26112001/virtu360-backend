@@ -44,7 +44,13 @@ public class ProjectQueryServiceImpl implements ProjectQueryService {
   @Transactional(readOnly = true)
   public Optional<Project> handle(GetProjectByIdQuery query) {
 
-    return projectRepository.findById(query.projectId());
+    Optional<Project> projectOpt = projectRepository.findById(query.projectId());
+
+    projectOpt.ifPresent(project -> {
+      project.getNodes().size();
+    });
+
+    return projectOpt;
   }
 
   @Override
@@ -65,6 +71,7 @@ public class ProjectQueryServiceImpl implements ProjectQueryService {
     List<Project> projects = projectRepository.findByOwnerId(query.ownerId());
 
     projects.forEach(project -> project.getNodes().size());
+
     return projects;
   }
 
@@ -74,7 +81,11 @@ public class ProjectQueryServiceImpl implements ProjectQueryService {
       GetPublishedProjectsQuery query
   ) {
 
-    return projectRepository.findByPublishedTrue();
+    List<Project> projects = projectRepository.findByPublishedTrue();
+
+    projects.forEach(project -> project.getNodes().size());
+
+    return projects;
   }
 
   // =========================
@@ -82,6 +93,7 @@ public class ProjectQueryServiceImpl implements ProjectQueryService {
   // =========================
 
   @Override
+  @Transactional(readOnly = true)
   public List<Node> handle(
       GetNodesByProjectIdQuery query
   ) {
@@ -92,16 +104,25 @@ public class ProjectQueryServiceImpl implements ProjectQueryService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public Optional<Node> handle(
       GetNodeByIdQuery query
   ) {
 
     validateProject(query.projectId());
 
-    return nodeRepository.findById(query.nodeId());
+    Optional<Node> nodeOpt = nodeRepository.findById(query.nodeId());
+
+    nodeOpt.ifPresent(node -> {
+      node.getLinks().size();
+      node.getMarkers().size();
+    });
+
+    return nodeOpt;
   }
 
   @Override
+  @Transactional(readOnly = true)
   public Optional<Node> handle(
       GetStartingNodeQuery query
   ) {
@@ -112,9 +133,14 @@ public class ProjectQueryServiceImpl implements ProjectQueryService {
       return Optional.empty();
     }
 
-    return nodeRepository.findById(
-        project.getStartingNodeId()
-    );
+    Optional<Node> nodeOpt = nodeRepository.findById(project.getStartingNodeId());
+
+    nodeOpt.ifPresent(node -> {
+      node.getLinks().size();
+      node.getMarkers().size();
+    });
+
+    return nodeOpt;
   }
 
   // =========================
@@ -122,6 +148,7 @@ public class ProjectQueryServiceImpl implements ProjectQueryService {
   // =========================
 
   @Override
+  @Transactional(readOnly = true)
   public List<Link> handle(
       GetLinksByNodeIdQuery query
   ) {
@@ -141,6 +168,7 @@ public class ProjectQueryServiceImpl implements ProjectQueryService {
   // =========================
 
   @Override
+  @Transactional(readOnly = true)
   public List<Marker> handle(
       GetMarkersByNodeIdQuery query
   ) {
@@ -156,6 +184,7 @@ public class ProjectQueryServiceImpl implements ProjectQueryService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<InfoMarker> handle(
       GetInfoMarkersByNodeIdQuery query
   ) {
@@ -166,16 +195,14 @@ public class ProjectQueryServiceImpl implements ProjectQueryService {
     );
 
     return markerRepository
-        .findByNodeIdAndType(
-            query.nodeId(),
-            MarkerType.INFO
-        )
+        .findByNodeIdAndType(query.nodeId(), MarkerType.INFO)
         .stream()
         .map(InfoMarker.class::cast)
         .toList();
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<VideoMarker> handle(
       GetVideoMarkersByNodeIdQuery query
   ) {
@@ -186,16 +213,14 @@ public class ProjectQueryServiceImpl implements ProjectQueryService {
     );
 
     return markerRepository
-        .findByNodeIdAndType(
-            query.nodeId(),
-            MarkerType.VIDEO
-        )
+        .findByNodeIdAndType(query.nodeId(), MarkerType.VIDEO)
         .stream()
         .map(VideoMarker.class::cast)
         .toList();
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<GalleryMarker> handle(
       GetGalleryMarkersByNodeIdQuery query
   ) {
@@ -206,10 +231,7 @@ public class ProjectQueryServiceImpl implements ProjectQueryService {
     );
 
     return markerRepository
-        .findByNodeIdAndType(
-            query.nodeId(),
-            MarkerType.GALLERY
-        )
+        .findByNodeIdAndType(query.nodeId(), MarkerType.GALLERY)
         .stream()
         .map(GalleryMarker.class::cast)
         .toList();
@@ -242,16 +264,13 @@ public class ProjectQueryServiceImpl implements ProjectQueryService {
       UUID nodeId
   ) {
 
-    Node node = nodeRepository.findById(nodeId)
-        .orElseThrow(() ->
-            new IllegalArgumentException(
-                "Node not found"
-            ));
+    if (!nodeRepository.existsById(nodeId)) {
+      throw new IllegalArgumentException("Node not found");
+    }
 
-    if (!node.getProject().getId().equals(projectId)) {
-      throw new IllegalArgumentException(
-          "Node does not belong to project"
-      );
+    boolean belongsToProject = nodeRepository.existsByIdAndProjectId(nodeId, projectId);
+    if (!belongsToProject) {
+      throw new IllegalArgumentException("Node does not belong to project");
     }
   }
 }

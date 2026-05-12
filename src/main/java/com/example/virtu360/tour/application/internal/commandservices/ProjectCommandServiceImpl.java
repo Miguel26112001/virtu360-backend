@@ -8,11 +8,13 @@ import com.example.virtu360.tour.domain.services.ExternalCloudinaryService;
 import com.example.virtu360.tour.domain.services.ProjectCommandService;
 import com.example.virtu360.tour.infrastructure.persistence.jpa.repositories.ProjectRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@Transactional
 public class ProjectCommandServiceImpl implements ProjectCommandService {
 
   private final ProjectRepository projectRepository;

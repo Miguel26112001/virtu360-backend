@@ -10,4 +10,6 @@ public interface NodeRepository
     extends JpaRepository<Node, UUID> {
 
   List<Node> findByProjectId(UUID projectId);
+
+  boolean existsByIdAndProjectId(UUID nodeId, UUID projectId);
 }
