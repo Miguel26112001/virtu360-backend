@@ -116,10 +116,13 @@ public class ProjectCommandServiceImpl implements ProjectCommandService {
 
     var upload = optionalUpload.get();
 
-    String thumbnailUrl = generateThumbnailUrl(upload.url());
+    String optimizedPanoramaUrl =
+        generateOptimizedPanoramaUrl(upload.url());
+    String thumbnailUrl =
+        generateThumbnailUrl(upload.url());
 
     Node node = Node.create(
-        upload.url(),
+        optimizedPanoramaUrl,
         thumbnailUrl,
         command.caption(),
         upload.publicId()
@@ -353,6 +356,16 @@ public class ProjectCommandServiceImpl implements ProjectCommandService {
     return projectRepository.findById(projectId)
         .orElseThrow(() ->
             new IllegalArgumentException("Project not found"));
+  }
+
+  private String generateOptimizedPanoramaUrl(
+      String url
+  ) {
+
+    return url.replace(
+        "/upload/",
+        "/upload/f_auto,q_auto,w_4096/"
+    );
   }
 
   private String generateThumbnailUrl(String url) {
