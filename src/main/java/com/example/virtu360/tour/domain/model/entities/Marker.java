@@ -3,6 +3,8 @@ package com.example.virtu360.tour.domain.model.entities;
 import com.example.virtu360.shared.domain.model.entities.AuditableModel;
 import com.example.virtu360.tour.domain.model.valueobjects.MarkerType;
 import com.example.virtu360.tour.domain.model.valueobjects.Position;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,6 +19,16 @@ import java.util.UUID;
     name = "marker_type",
     discriminatorType = DiscriminatorType.STRING
 )
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.PROPERTY,
+    property = "type"
+)
+@JsonSubTypes({
+    @JsonSubTypes.Type(value = InfoMarker.class, name = "INFO"),
+    @JsonSubTypes.Type(value = VideoMarker.class, name = "VIDEO"),
+    @JsonSubTypes.Type(value = GalleryMarker.class, name = "GALLERY")
+})
 @Getter
 @NoArgsConstructor
 public abstract class Marker extends AuditableModel {

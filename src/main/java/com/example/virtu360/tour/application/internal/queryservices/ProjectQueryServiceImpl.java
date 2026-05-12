@@ -178,9 +178,15 @@ public class ProjectQueryServiceImpl implements ProjectQueryService {
         query.nodeId()
     );
 
-    return markerRepository.findByNodeId(
-        query.nodeId()
-    );
+    List<Marker> markers = markerRepository.findByNodeId(query.nodeId());
+
+    markers.forEach(marker -> {
+      if (marker instanceof GalleryMarker gallery) {
+        gallery.getImageUrls().size();
+      }
+    });
+
+    return markers;
   }
 
   @Override
@@ -230,11 +236,17 @@ public class ProjectQueryServiceImpl implements ProjectQueryService {
         query.nodeId()
     );
 
-    return markerRepository
+    List<GalleryMarker> markers = markerRepository
         .findByNodeIdAndType(query.nodeId(), MarkerType.GALLERY)
         .stream()
         .map(GalleryMarker.class::cast)
         .toList();
+
+    markers.forEach(marker -> {
+      marker.getImageUrls().size();
+    });
+
+    return markers;
   }
 
   // =========================
