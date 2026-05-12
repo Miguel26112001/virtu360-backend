@@ -35,13 +35,18 @@ RUN chown -R spring:spring /app
 
 USER spring:spring
 
-# Expose application port
+# Render provides PORT dynamically
 EXPOSE 8080
 
-# JVM optimizations for containers
-ENTRYPOINT ["java", \
-"-XX:+UseContainerSupport", \
-"-XX:MaxRAMPercentage=75.0", \
-"-Djava.security.egd=file:/dev/./urandom", \
-"-jar", \
+# =========================================================
+# JVM OPTIMIZATION FOR LOW MEMORY CONTAINERS
+# =========================================================
+ENTRYPOINT ["java",
+"-Xms128m",
+"-Xmx320m",
+"-XX:+UseSerialGC",
+"-XX:+UseContainerSupport",
+"-XX:MaxMetaspaceSize=128m",
+"-Djava.security.egd=file:/dev/./urandom",
+"-jar",
 "app.jar"]
