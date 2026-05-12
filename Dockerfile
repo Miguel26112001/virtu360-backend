@@ -35,20 +35,8 @@ RUN chown -R spring:spring /app
 
 USER spring:spring
 
-# Render dynamic port
+# Expose application port
 EXPOSE 8080
 
-# =========================================================
-# JVM OPTIMIZATION FOR RENDER FREE TIER
-# =========================================================
-ENTRYPOINT [
-  "java",
-  "-Xms128m",
-  "-Xmx320m",
-  "-XX:+UseSerialGC",
-  "-XX:+UseContainerSupport",
-  "-XX:MaxMetaspaceSize=128m",
-  "-Djava.security.egd=file:/dev/./urandom",
-  "-jar",
-  "app.jar"
-]
+# JVM optimization for Render free tier
+ENTRYPOINT ["java","-Xms128m","-Xmx320m","-XX:+UseSerialGC","-XX:+UseContainerSupport","-XX:MaxMetaspaceSize=128m","-Djava.security.egd=file:/dev/./urandom","-jar","app.jar"]
