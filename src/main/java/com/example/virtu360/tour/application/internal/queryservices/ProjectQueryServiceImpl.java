@@ -10,6 +10,7 @@ import com.example.virtu360.tour.infrastructure.persistence.jpa.repositories.Mar
 import com.example.virtu360.tour.infrastructure.persistence.jpa.repositories.NodeRepository;
 import com.example.virtu360.tour.infrastructure.persistence.jpa.repositories.ProjectRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -40,12 +41,14 @@ public class ProjectQueryServiceImpl implements ProjectQueryService {
   // =========================
 
   @Override
+  @Transactional(readOnly = true)
   public Optional<Project> handle(GetProjectByIdQuery query) {
 
     return projectRepository.findById(query.projectId());
   }
 
   @Override
+  @Transactional(readOnly = true)
   public Optional<Project> handle(
       GetPublishedProjectByIdQuery query
   ) {
@@ -55,14 +58,18 @@ public class ProjectQueryServiceImpl implements ProjectQueryService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<Project> handle(
       GetProjectsByOwnerIdQuery query
   ) {
+    List<Project> projects = projectRepository.findByOwnerId(query.ownerId());
 
-    return projectRepository.findByOwnerId(query.ownerId());
+    projects.forEach(project -> project.getNodes().size());
+    return projects;
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<Project> handle(
       GetPublishedProjectsQuery query
   ) {
